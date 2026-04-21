@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wedding Gallery</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #fafafa;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 20px;
+    }
+    img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Wedding Moments</h2>
+
+<input type="file" id="fileInput" />
+<br>
+<button onclick="uploadImage()">Upload</button>
+
+<div class="gallery" id="gallery"></div>
+
+<script>
+const cloudName = "YOUR_CLOUD_NAME";
+const uploadPreset = "wedding_upload";
+
+function uploadImage() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("Select a file");
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Uploaded!");
+    loadGallery();
+  });
+}
+
+function loadGallery() {
+  fetch(`https://res.cloudinary.com/${cloudName}/image/list/wedding.json`)
+    .then(res => res.json())
+    .then(data => {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      data.resources.reverse().forEach(img => {
+        const image = document.createElement("img");
+        image.src = `https://res.cloudinary.com/${cloudName}/image/upload/${img.public_id}.jpg`;
+        gallery.appendChild(image);
+      });
+    });
+}
+
+loadGallery();
+</script>
+
+</body>
+</html>
